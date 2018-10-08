@@ -124,7 +124,7 @@ PASS
 ok      github.com/httpimp/bloomfilter  3.320s
 ```
 
-Will Fitzgerald's `bloom` is the most popular bloom filter written in Go
+Will Fitzgerald's `bloom` is an excellent bloom filter written in Go
 
 https://github.com/willf/bloom
 
