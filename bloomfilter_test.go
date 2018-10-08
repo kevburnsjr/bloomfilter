@@ -1,6 +1,7 @@
 package bloomfilter
 
 import (
+	"encoding/binary"
 	// "fmt"
 	"testing"
 )
@@ -147,5 +148,28 @@ func TestCompatibility(t *testing.T) {
 			t.Log(int32(ii[i]))
 			t.Fail()
 		}
+	}
+}
+
+func BenchmarkSeparateTestAndAdd(b *testing.B) {
+	m, k := EstimateParameters(b.N, 1e-4)
+	f := New(m, k)
+	key := make([]byte, 100)
+	b.ResetTimer()
+	for i := 0; i < b.N; i++ {
+		binary.BigEndian.PutUint32(key, uint32(i))
+		f.Test(key)
+		f.Add(key)
+	}
+}
+
+func BenchmarkSeparateAdd(b *testing.B) {
+	m, k := EstimateParameters(b.N, 1e-4)
+	f := New(m, k)
+	key := make([]byte, 100)
+	b.ResetTimer()
+	for i := 0; i < b.N; i++ {
+		binary.BigEndian.PutUint32(key, uint32(i))
+		f.Add(key)
 	}
 }
