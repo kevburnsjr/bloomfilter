@@ -142,10 +142,11 @@ PASS
 ok      github.com/willf/bloom  9.580s
 ```
 
-This project is about 15% slower for Add and 40% slower for Test and Add. This performance
-penalty may be an acceptable trade-off in exchange for the portability this project is designed to
-provide. Weigh your application's efficiency requirements for bloom filter use and creation against
-the ability to use your filters in javascript before integrating this package.
+This project is about 15% slower for Add and 40% slower for Test and Add compared with bloom.
+This performance penalty may be an acceptable trade-off in exchange for the portability this
+project is designed to provide. Weigh your application's efficiency requirements for bloom filter
+use and creation against the benefit of sharing filters with javascript applications before
+integrating this package.
 
 ### Standing on the shoulders of giants
 
