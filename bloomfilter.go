@@ -21,19 +21,6 @@ func New(m, k int) BloomFilter {
 		k:       k,
 		buckets: make([]uint32, n),
 	}
-	return bf
-}
-
-// NewFromUint32Slice creates a new bloom filter from a int32 slice.
-// b is a bucket set.
-// k specifies the number of hashing functions.
-func NewFromUint32Slice(ii []uint32, k int) BloomFilter {
-	bf := BloomFilter{
-		m:       uint32(len(ii) * 32),
-		k:       k,
-		buckets: ii,
-	}
-	return bf
 }
 
 // NewFromBytes creates a new bloom filter from a byte slice.
@@ -116,11 +103,6 @@ func (bf BloomFilter) ToBytes() []byte {
 		bb = append(bb, a...)
 	}
 	return bb
-}
-
-// ToUint32Slice returns the bloom filter as a uint32 slice
-func (bf BloomFilter) ToUint32Slice() []uint32 {
-	return bf.buckets
 }
 
 // Fowler/Noll/Vo hashing.

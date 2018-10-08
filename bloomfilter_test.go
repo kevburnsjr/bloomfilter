@@ -1,6 +1,7 @@
 package bloomfilter
 
 import (
+	"encoding/base64"
 	"encoding/binary"
 	// "fmt"
 	"testing"
@@ -86,68 +87,33 @@ func TestToFromBytes(t *testing.T) {
 	}
 }
 
-func TestToFromUint32Slice(t *testing.T) {
-	k := 4
-	m := 1000
-	f := New(m, k)
-	f.Add([]byte("abc"))
-	f.Add([]byte("def"))
-	bb := f.ToUint32Slice()
-	f2 := NewFromUint32Slice(bb, k)
-	if !f2.Test([]byte("abc")) {
-		t.Fail()
-	}
-	if f2.Test([]byte("ghi")) {
-		t.Fail()
-	}
-}
-
 // TestCompatibility compares bloomfilter.js results to this package's results
 func TestCompatibility(t *testing.T) {
+	expected := "nnjzzw=="
 	f := New(32, 21)
 	f.Add([]byte("abc"))
-	ii := f.ToUint32Slice()
-	if int32(ii[0]) != int32(-1636240433) {
-		t.Log(int32(-1636240433))
-		t.Log(int32(ii[0]))
+	actual := base64.StdEncoding.EncodeToString(f.ToBytes())
+	if expected != string(actual) {
+		t.Log(expected, string(actual))
 		t.Fail()
 	}
-	expected := []int32{503377935, -2139618368}
+	expected = "HgDwD4B4A8A="
 	f = New(64, 21)
 	f.Add([]byte("abc"))
-	ii = f.ToUint32Slice()
-	for i := 0; i < len(expected); i++ {
-		if int32(ii[i]) != expected[i] {
-			t.Log(expected[i])
-			t.Log(int32(ii[i]))
-			t.Fail()
-		}
+	actual = string(base64.StdEncoding.EncodeToString(f.ToBytes()))
+	if expected != actual {
+		t.Log(expected, actual)
+		t.Fail()
 	}
-	expected = []int32{503316495, 7864320, 61440, -2147482688}
+	expected = "HkRD/wB/5AB/APRExEAHxA=="
 	f = New(100, 21)
-	f.Add([]byte("abc"))
-	ii = f.ToUint32Slice()
-	for i := 0; i < len(expected); i++ {
-		if int32(ii[i]) != expected[i] {
-			t.Log(expected[i])
-			t.Log(int32(ii[i]))
-			t.Fail()
-		}
-	}
-	expected = []int32{0, 7864320, 0, 67108928, 17400, 0, 0, -1073740800, 262159, 0, 0, 0, 4194308,
-		1024, 2130767872, 0, 67108864, 16384, 4, 0, 503316480, 262144, 67108928, 0, 0, 5234688,
-		1073742848, 960, 0, 0, 16384, 4194308}
-	f = New(1000, 21)
 	f.Add([]byte("abc"))
 	f.Add([]byte("def"))
 	f.Add([]byte("ghi"))
-	ii = f.ToUint32Slice()
-	for i := 0; i < len(expected); i++ {
-		if int32(ii[i]) != expected[i] {
-			t.Log(expected[i])
-			t.Log(int32(ii[i]))
-			t.Fail()
-		}
+	actual = string(base64.StdEncoding.EncodeToString(f.ToBytes()))
+	if expected != actual {
+		t.Log(expected, actual)
+		t.Fail()
 	}
 }
 
