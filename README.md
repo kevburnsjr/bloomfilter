@@ -6,7 +6,7 @@ This bloom filter implementation is a Go port of https://github.com/jasondavies/
 [![Go Report Card](https://goreportcard.com/badge/github.com/httpimp/bloomfilter?1)](https://goreportcard.com/report/github.com/httpimp/bloomfilter)
 [![GoDoc](https://godoc.org/github.com/httpimp/bloomfilter?status.svg)](https://godoc.org/github.com/httpimp/bloomfilter)
 
-The ability to build a bloom filter on the server in Go and evaluate that filter on the client in
+The ability to build a bloom filter on a server in Go and evaluate that filter on a client in
 Javascript can have immense value for comparing application state in distributed single page
 applications with offline read/write capabilities and large data sets.
 
@@ -18,9 +18,9 @@ filter implemenation, none appeared that fit the requirements.
 So, the most popular actively maintained javascript bloom filter on Github was selected and ported
 to Go.
 
-The reference implementation uses a non-standard FNV algorithm. It is also less than 120 lines
-of javascript. This project proves that the reference implementation can be easily ported by a
-skilled developer to any desired language in less than a day.
+The reference implementation uses a non-standard FNV hashing algorithm. It is also less than 120
+lines of javascript. This project proves that the reference implementation can be ported by a
+skilled developer to another language in a day.
 
 ### Go Example
 
@@ -46,7 +46,6 @@ func main() {
 	fmt.Println(k)
 	fmt.Println(string(encoded))
 }
-
 ```
 
 > 288  
