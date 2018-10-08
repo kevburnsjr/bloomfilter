@@ -3,35 +3,44 @@ package bloomfilter
 import (
 	"encoding/binary"
 	"math"
+	"sync"
 )
 
 type BloomFilter struct {
-	m       uint32
-	k       int
-	buckets []uint32
+	m        uint32
+	k        int
+	buckets  []uint32
+	location []uint32
+	lock     sync.RWMutex
 }
 
 // New creates a new bloom filter. m should specify the number of bits.
 // m is rounded up to the nearest multiple of 32.
 // k specifies the number of hashing functions.
-func New(m, k int) BloomFilter {
+func New(m, k int) *BloomFilter {
 	var n = uint32(math.Ceil(float64(m) / 32))
-	bf := BloomFilter{
-		m:       n * 32,
-		k:       k,
-		buckets: make([]uint32, n),
+	return &BloomFilter{
+		m:        n * 32,
+		k:        k,
+		buckets:  make([]uint32, n),
+		location: make([]uint32, k),
 	}
 }
 
 // NewFromBytes creates a new bloom filter from a byte slice.
 // b is a byte slice exported from another bloomfilter.
 // k specifies the number of hashing functions.
-func NewFromBytes(bb []byte, k int) BloomFilter {
+func NewFromBytes(bb []byte, k int) *BloomFilter {
 	ii := make([]uint32, len(bb)/4)
 	for i := range ii {
 		ii[i] = uint32(binary.BigEndian.Uint32(bb[i*4 : (i+1)*4]))
 	}
-	return NewFromUint32Slice(ii, k)
+	return &BloomFilter{
+		m:        uint32(len(ii) * 32),
+		k:        k,
+		buckets:  ii,
+		location: make([]uint32, k),
+	}
 }
 
 // EstimateParameters estimates requirements for m and k.
@@ -45,24 +54,25 @@ func EstimateParameters(n int, p float64) (m int, k int) {
 	return
 }
 
-func (bf BloomFilter) locations(v []byte) []uint32 {
-	var r = make([]uint32, bf.k)
+func (bf *BloomFilter) locations(v []byte) []uint32 {
 	var a = fnv_1a(v, 0)
 	var b = fnv_1a(v, 1576284489)
 	var x = a % uint32(bf.m)
 	for i := 0; i < bf.k; i++ {
 		if x < 0 {
-			r[i] = x + bf.m
+			bf.location[i] = x + bf.m
 		} else {
-			r[i] = x
+			bf.location[i] = x
 		}
 		x = (x + b) % bf.m
 	}
-	return r
+	return bf.location
 }
 
 // Add adds a byte array to the bloom filter
-func (bf BloomFilter) Add(v []byte) {
+func (bf *BloomFilter) Add(v []byte) {
+	bf.lock.Lock()
+	defer bf.lock.Unlock()
 	var l = bf.locations(v)
 	for i := 0; i < bf.k; i++ {
 		bf.buckets[int(math.Floor(float64(uint32(l[i])/32)))] |= 1 << (uint32(l[i]) % 32)
@@ -70,14 +80,16 @@ func (bf BloomFilter) Add(v []byte) {
 }
 
 // AddInt adds an int to the bloom filter
-func (bf BloomFilter) AddInt(v int) {
+func (bf *BloomFilter) AddInt(v int) {
 	var a = make([]byte, 4)
 	binary.BigEndian.PutUint32(a, uint32(v))
 	bf.Add(a)
 }
 
 // Test evaluates a byte array to determine whether it is (probably) in the bloom filter
-func (bf BloomFilter) Test(v []byte) bool {
+func (bf *BloomFilter) Test(v []byte) bool {
+	bf.lock.RLock()
+	defer bf.lock.RUnlock()
 	var l = bf.locations(v)
 	for i := 0; i < bf.k; i++ {
 		if (bf.buckets[int(math.Floor(float64(uint32(l[i])/32)))] & (1 << (uint32(l[i]) % 32))) == 0 {
@@ -88,14 +100,18 @@ func (bf BloomFilter) Test(v []byte) bool {
 }
 
 // TestInt evaluates an int to determine whether it is (probably) in the bloom filter
-func (bf BloomFilter) TestInt(v int) bool {
+func (bf *BloomFilter) TestInt(v int) bool {
+	bf.lock.RLock()
+	defer bf.lock.RUnlock()
 	var a = make([]byte, 4)
 	binary.BigEndian.PutUint32(a, uint32(v))
 	return bf.Test(a)
 }
 
 // ToBytes returns the bloom filter as a byte slice
-func (bf BloomFilter) ToBytes() []byte {
+func (bf *BloomFilter) ToBytes() []byte {
+	bf.lock.RLock()
+	defer bf.lock.RUnlock()
 	var bb = []byte{}
 	for i := 0; i < len(bf.buckets); i++ {
 		var a = make([]byte, 4)

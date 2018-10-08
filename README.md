@@ -10,12 +10,10 @@ The ability to build a bloom filter on the server in Go and evaluate that filter
 Javascript can have immense value for comparing application state in distributed single page
 applications with offline read/write capabilities and large data sets.
 
-There are a lot of open source bloom filter implementations available on the internet.
-
-For the most part, these implementations are not compatible. Every repo adds its own special
-sauce to its hashing algorithms and hash derivation methods. After scouring the internet for several
-hours searching for a multi language bloom filter implemenation, none appeared that fit the
-requirements.
+There are a lot of open source bloom filter implementations available on the internet. These
+implementations are mostly incompatible. Every repo adds its own special sauce to its hashing
+algorithms and hash derivation methods. After scouring the internet for several hours searching
+for a multi language bloom filter implemenation, none appeared that fit the requirements.
 
 So, the most popular actively maintained javascript bloom filter on Github was selected and ported
 to Go.
@@ -25,6 +23,8 @@ of javascript. This project proves that the reference implementation can be easi
 skilled developer to any desired language in less than a day.
 
 ### Go Example
+
+bloomfilter is thread safe
 
 ```go
 package main
@@ -106,6 +106,46 @@ func main() {
 > true  
 > true  
 > false
+
+## Performance
+
+This is not the most efficient bloom filter available for Go. There are plenty of good options if
+you don't need portability.
+
+That said, it still does perform reasonably well.
+
+```
+> go test -bench .
+goos: linux
+goarch: amd64
+pkg: github.com/httpimp/bloomfilter
+BenchmarkSeparateTestAndAdd-2            1000000              1224 ns/op
+BenchmarkSeparateAdd-2                   2000000               702 ns/op
+PASS
+ok      github.com/httpimp/bloomfilter  3.320s
+```
+
+Will Fitzgerald's `bloom` is the most popular bloom filter written in Go
+
+https://github.com/willf/bloom
+
+```
+> go test -bench .
+goos: linux
+goarch: amd64
+pkg: github.com/willf/bloom
+BenchmarkEstimated-2                    2000000000               0.10 ns/op
+BenchmarkSeparateTestAndAdd-2            2000000               761 ns/op
+BenchmarkCombinedTestAndAdd-2            3000000               757 ns/op
+BenchmarkAdd-2                           3000000               599 ns/op
+PASS
+ok      github.com/willf/bloom  9.580s
+```
+
+This project is about 15% slower for Add and 40% slower for Test and Add. This performance
+penalty may be an acceptable trade-off in exchange for the portability this project is designed to
+provide. Weigh your application's efficiency requirements for bloom filter use and creation against
+the ability to use your filters in javascript before integrating this package.
 
 ### Standing on the shoulders of giants
 
