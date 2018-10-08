@@ -24,7 +24,7 @@ skilled developer to another language in a day.
 
 ### Go Example
 
-bloomfilter is thread safe
+bloomfilter is thread safe with 95% test coverage
 
 ```go
 package main

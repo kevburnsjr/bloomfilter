@@ -87,6 +87,15 @@ func TestToFromBytes(t *testing.T) {
 	}
 }
 
+func TestEstimateParameters(t *testing.T) {
+	m, k := EstimateParameters(10000, 1e-6)
+	if m != 287552 || k != 20 {
+		t.Log(287552, m)
+		t.Log(20, k)
+		t.Fail()
+	}
+}
+
 // TestCompatibility compares bloomfilter.js results to this package's results
 func TestCompatibility(t *testing.T) {
 	expected := "nnjzzw=="
