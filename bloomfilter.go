@@ -33,7 +33,7 @@ func New(m, k int) *BloomFilter {
 func NewFromBytes(bb []byte, k int) *BloomFilter {
 	ii := make([]uint32, len(bb)/4)
 	for i := range ii {
-		ii[i] = uint32(binary.BigEndian.Uint32(bb[i*4 : (i+1)*4]))
+		ii[i] = binary.BigEndian.Uint32(bb[i*4 : (i+1)*4])
 	}
 	return &BloomFilter{
 		m:        uint32(len(ii) * 32),
@@ -123,9 +123,8 @@ func (bf *BloomFilter) ToBytes() []byte {
 // "almost any offset_basis will serve so long as it is non-zero".
 func fnv_1a(v []byte, seed int) uint32 {
 	var a = uint32(2166136261 ^ seed)
-	var n = len(v)
-	for i := 0; i < n; i++ {
-		var c = uint32(v[i])
+	for _, b := range v {
+		var c = uint32(b)
 		var d = c & 0xff00
 		if d != 0 {
 			a = fnv_multiply(a ^ d>>8)
