@@ -58,12 +58,8 @@ func (bf *BloomFilter) locations(v []byte) []uint32 {
 	var a = fnv_1a(v, 0)
 	var b = fnv_1a(v, 1576284489)
 	var x = a % uint32(bf.m)
-	for i := 0; i < bf.k; i++ {
-		if x < 0 {
-			bf.location[i] = x + bf.m
-		} else {
-			bf.location[i] = x
-		}
+	for i := range bf.location {
+		bf.location[i] = x
 		x = (x + b) % bf.m
 	}
 	return bf.location
@@ -73,9 +69,9 @@ func (bf *BloomFilter) locations(v []byte) []uint32 {
 func (bf *BloomFilter) Add(v []byte) {
 	bf.lock.Lock()
 	defer bf.lock.Unlock()
-	var l = bf.locations(v)
-	for i := 0; i < bf.k; i++ {
-		bf.buckets[int(math.Floor(float64(uint32(l[i])/32)))] |= 1 << (uint32(l[i]) % 32)
+	var loc = bf.locations(v)
+	for _, l := range loc {
+		bf.buckets[l/32] |= 1 << (l % 32)
 	}
 }
 
@@ -90,9 +86,9 @@ func (bf *BloomFilter) AddInt(v int) {
 func (bf *BloomFilter) Test(v []byte) bool {
 	bf.lock.RLock()
 	defer bf.lock.RUnlock()
-	var l = bf.locations(v)
-	for i := 0; i < bf.k; i++ {
-		if (bf.buckets[int(math.Floor(float64(uint32(l[i])/32)))] & (1 << (uint32(l[i]) % 32))) == 0 {
+	var loc = bf.locations(v)
+	for _, l := range loc {
+		if (bf.buckets[l/32] & (1 << (l % 32))) == 0 {
 			return false
 		}
 	}
@@ -113,9 +109,9 @@ func (bf *BloomFilter) ToBytes() []byte {
 	bf.lock.RLock()
 	defer bf.lock.RUnlock()
 	var bb = []byte{}
-	for i := 0; i < len(bf.buckets); i++ {
+	for _, bucket := range bf.buckets {
 		var a = make([]byte, 4)
-		binary.BigEndian.PutUint32(a, bf.buckets[i])
+		binary.BigEndian.PutUint32(a, bucket)
 		bb = append(bb, a...)
 	}
 	return bb

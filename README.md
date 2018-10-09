@@ -18,7 +18,7 @@ filter implemenation, none appeared that fit the requirements.
 So, the most popular actively maintained javascript bloom filter on Github was selected and ported
 to Go.
 
-The reference implementation uses a non-standard FNV hashing algorithm. It is also less than 120
+The reference implementation uses a non-standard fnv1a hashing algorithm. It is also less than 120
 lines of javascript. This project proves that the reference implementation can be ported by a
 skilled developer to another language in a day.
 
