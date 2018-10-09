@@ -31,7 +31,7 @@ package main
 
 import (
 	"encoding/base64"
-	"log"
+	"fmt"
 
 	"github.com/httpimp/bloomfilter"
 )
